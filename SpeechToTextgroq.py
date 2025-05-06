@@ -38,7 +38,7 @@ audio_file = st.file_uploader("📤 Upload your audio file (mp3, wav, m4a)", typ
 
 
 # Initialize the Groq client
-client = Groq(api_key=st.secrets["TOKEN"])#st.secrets["TOKEN"])#put your token here for more seurity when deploying put it into an .env as TOKEN
+client = Groq(api_key=st.secrets["TOKEN"])
 button = st.button("Generate Subtitles")
 
 # Subtitle generation (placeholder)
@@ -57,9 +57,11 @@ if audio_file is not None:
         )
         subtitles = transcription.to_dict()["words"]
         # ===========================================
-        st.json(subtitles)
         st.success("✅ Transcription complete!")
         st.markdown("### 📝 Subtitles:")
+        st.json(subtitles)
+        
+        
 
 # Footer
 st.markdown("---")
