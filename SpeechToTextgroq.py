@@ -84,4 +84,4 @@ if st.session_state.subtitles:
 
 # --- Footer ---
 st.markdown("---")
-st.caption("Made with ❤️ using Streamlit")
+st.caption("Made with Omar❤️ using Streamlit")
