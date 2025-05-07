@@ -37,7 +37,6 @@ if "audio_mode" not in st.session_state:
 
 # --- Groq client ---
 client = Groq(api_key=st.secrets["TOKEN"])
-# For deployment, use: Groq(api_key=st.secrets["TOKEN"])
 
 # --- Toggle buttons ---
 col1, col2 = st.columns(2)
