@@ -3,10 +3,10 @@ import tempfile
 import os
 from groq import Groq
 
-# Page config
+# --- Page setup ---
 st.set_page_config(page_title="Audio Subtitle Generator", page_icon="🎵", layout="centered")
 
-# Custom CSS
+# --- CSS ---
 st.markdown("""
     <style>
     .main {
@@ -27,42 +27,60 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Header
+# --- Title ---
 st.markdown('<div class="title">🎙️ Audio to Subtitle Generator</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Upload your audio file and generate subtitles in seconds!</div>',
-            unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Upload your audio file or record it, then generate subtitles!</div>', unsafe_allow_html=True)
 
-# Audio file uploader
-audio_file = st.file_uploader("📤 Upload your audio file (mp3, wav, m4a)", type=["mp3", "wav", "m4a"])
+# --- Session state init ---
+if "audio_mode" not in st.session_state:
+    st.session_state.audio_mode = "upload"  # or "record"
 
-
-
-# Initialize the Groq client
+# --- Groq client ---
 client = Groq(api_key=st.secrets["TOKEN"])
-button = st.button("Generate Subtitles")
+# For deployment, use: Groq(api_key=st.secrets["TOKEN"])
 
-# Subtitle generation (placeholder)
-if audio_file is not None:
-    st.audio(audio_file, format="audio/mp3")
-    if button is True:
+# --- Toggle buttons ---
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("🔄 Switch to Upload Mode"):
+        st.session_state.audio_mode = "upload"
+with col2:
+    if st.button("🎙️ Switch to Record Mode"):
+        st.session_state.audio_mode = "record"
+
+st.markdown(f"**Current Mode:** `{st.session_state.audio_mode}`")
+
+# --- Upload or record ---
+audio_file = None
+if st.session_state.audio_mode == "upload":
+    audio_file = st.file_uploader("📤 Upload your audio file (mp3, wav, m4a)", type=["mp3", "wav", "m4a"])
+elif st.session_state.audio_mode == "record":
+    audio_file = st.audio_input("🎤 Record your voice")
+
+# --- Transcribe ---
+if st.button("🧠 Generate Subtitles"):
+    if not audio_file:
+        st.warning("Please provide an audio file or record something first.")
+        st.stop()
+    if st.session_state.audio_mode == "upload":
+        st.audio(audio_file, format="audio/mp3")
+
+    with st.spinner("Transcribing..."):
         transcription = client.audio.transcriptions.create(
-            file=audio_file,  # Required audio file
-            model="whisper-large-v3-turbo",  # Required model to use for transcription
-            prompt="Specify context or spelling",  # Optional
-            response_format="verbose_json",  # Optional
+            file=audio_file,
+            model="whisper-large-v3-turbo",
+            prompt="Specify context or spelling",
+            response_format="verbose_json",
             timestamp_granularities=["word", "segment"],
-            # Optional (must set response_format to "json" to use and can specify "word", "segment" (default), or both)
-            language="en",  # Optional
-            temperature=0.0  # Optional
+            language="en",
+            temperature=0.0
         )
         subtitles = transcription.to_dict()["words"]
-        # ===========================================
-        st.success("✅ Transcription complete!")
-        st.markdown("### 📝 Subtitles:")
-        st.json(subtitles)
-        
-        
 
-# Footer
+    st.success("✅ Transcription complete!")
+    st.markdown("### 📝 Subtitles:")
+    st.json(subtitles)
+
+# --- Footer ---
 st.markdown("---")
-st.caption("Made with ❤️ using Streamlit")
+st.caption("Made with Omar❤️ using Streamlit")
